@@ -7,8 +7,21 @@ import (
 	"strconv"
 )
 
-// Cryptocurrency holds the cryptocurrency data
+// Cryptocurrency defines some methods that can be use to
+// fetch cryptocurrency data
 type Cryptocurrency struct {
+	api string
+}
+
+// New creates a new instance of Cryptocurrency
+func New() Cryptocurrency {
+	return Cryptocurrency{
+		api: "https://api.coinlore.net/api/ticker",
+	}
+}
+
+// Result holds the cryptocurrency data
+type Result struct {
 	ID        int
 	Symbol    string
 	Name      string
@@ -17,7 +30,7 @@ type Cryptocurrency struct {
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface
-func (c *Cryptocurrency) UnmarshalJSON(data []byte) error {
+func (r *Result) UnmarshalJSON(data []byte) error {
 	var slice []struct {
 		ID        string `json:"id"`
 		Symbol    string `json:"symbol"`
@@ -45,20 +58,20 @@ func (c *Cryptocurrency) UnmarshalJSON(data []byte) error {
 	symbol := slice[0].Symbol
 	name := slice[0].Name
 
-	c.ID = id
-	c.Symbol = symbol
-	c.Name = name
-	c.Price = price
-	c.MarketCap = marketCap
+	r.ID = id
+	r.Symbol = symbol
+	r.Name = name
+	r.Price = price
+	r.MarketCap = marketCap
 
 	return nil
 }
 
 // Get gets cryptocurrency info
-func Get(id int) (_ Cryptocurrency, retErr error) {
-	resp, err := http.Get(fmt.Sprintf("https://api.coinlore.net/api/ticker/?id=%d", id))
+func (c Cryptocurrency) Get(id int) (_ Result, retErr error) {
+	resp, err := http.Get(fmt.Sprintf("%s?id=%d", c.api, id))
 	if err != nil {
-		return Cryptocurrency{}, err
+		return Result{}, err
 	}
 	defer func() {
 		err := resp.Body.Close()
@@ -67,11 +80,11 @@ func Get(id int) (_ Cryptocurrency, retErr error) {
 		}
 	}()
 
-	var c Cryptocurrency
+	var r Result
 
-	if err := json.NewDecoder(resp.Body).Decode(&c); err != nil {
-		return Cryptocurrency{}, err
+	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return Result{}, err
 	}
 
-	return c, nil
+	return r, nil
 }

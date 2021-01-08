@@ -1,11 +1,13 @@
 package market
 
-import "github.com/codingpop/testable-go/cryptocurrency"
-
-const (
-	eth = 80
-	btc = 90
+import (
+	"github.com/codingpop/testable-go/cryptocurrency"
 )
+
+// CoinGetter defines an interface for the cryptocurrency dependency
+type CoinGetter interface {
+	Get(int) (cryptocurrency.Result, error)
+}
 
 // Coin represents the cryptocurrency data
 type Coin struct {
@@ -17,8 +19,8 @@ type Coin struct {
 }
 
 // GetCoinData fetches a cryptocurrency info
-func GetCoinData(symbol int) (Coin, error) {
-	crypto, err := cryptocurrency.Get(eth)
+func GetCoinData(symbol int, cg CoinGetter) (Coin, error) {
+	crypto, err := cg.Get(symbol)
 	if err != nil {
 		return Coin{}, err
 	}
