@@ -19,5 +19,5 @@ func main() {
 		return
 	}
 
-	fmt.Printf("%+v", coin)
+	fmt.Println(coin)
 }
